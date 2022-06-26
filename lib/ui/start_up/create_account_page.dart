@@ -4,7 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sns_app/models/account.dart';
 import 'package:sns_app/utils/authentication.dart';
+import 'package:sns_app/utils/firestore/users.dart';
 
 class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({Key? key}) : super(key: key);
@@ -32,7 +34,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     }
   }
 
-  Future<void> uploadImage(String uid) async {
+  Future<String> uploadImage(String uid) async {
     // インスタンスを作成
     final FirebaseStorage storageInstance = FirebaseStorage.instance;
     // ファイルへの参照を作成
@@ -42,6 +44,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     // アップロードした画像のURLを取得
     String downloadUrl = await storageInstance.ref(uid).getDownloadURL();
     print('image_path:$downloadUrl');
+    return downloadUrl;
   }
 
   @override
@@ -126,17 +129,28 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               ),
               const SizedBox(height: 50),
               ElevatedButton(
-                onPressed: () async{
+                onPressed: () async {
                   if (nameController.text.isNotEmpty &&
                       userIdController.text.isNotEmpty &&
                       selfIntroductionController.text.isNotEmpty &&
                       emailController.text.isNotEmpty &&
                       passwordController.text.isNotEmpty &&
                       image != null) {
-                    var result = await Authentication.signUp(emailController.text, passwordController.text);
+                    var result = await Authentication.signUp(
+                        emailController.text, passwordController.text);
                     if (result is UserCredential) {
-                      await uploadImage(result.user!.uid);
-                      Navigator.pop(context);
+                      String imagePath = await uploadImage(result.user!.uid);
+                      Account newAccount = Account(
+                        id: result.user!.uid,
+                        name: nameController.text,
+                        imagePath: imagePath,
+                        selfIntroduction: selfIntroductionController.text,
+                        userId: userIdController.text,
+                      );
+                      var _result = await UserFirestore.setUser(newAccount);
+                      if (_result == true) {
+                        Navigator.pop(context);
+                      }
                     }
                   }
                 },
