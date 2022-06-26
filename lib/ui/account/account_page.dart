@@ -79,12 +79,17 @@ class _AccountPageState extends State<AccountPage> {
                             ],
                           ),
                           OutlineButton(
-                            onPressed: () {
-                              Navigator.push(
+                            onPressed: () async {
+                              var result = Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
                                       const EditAccountPage()));
+                              if (result == true) {
+                                setState(() {
+                                  myAccount = Authentication.myAccount!;
+                                });
+                              }
                             },
                             child: const Text('編集'),
                           ),

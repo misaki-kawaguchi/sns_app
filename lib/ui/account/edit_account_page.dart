@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:sns_app/models/account.dart';
 import 'package:sns_app/utils/authentication.dart';
+import 'package:sns_app/utils/firestore/users.dart';
 import 'package:sns_app/utils/function_utils.dart';
 import 'package:sns_app/utils/widget_utils.dart';
 
@@ -34,7 +35,8 @@ class _EditAccountPageState extends State<EditAccountPage> {
     super.initState();
     nameController = TextEditingController(text: myAccount.name);
     userIdController = TextEditingController(text: myAccount.userId);
-    selfIntroductionController = TextEditingController(text: myAccount.selfIntroduction);
+    selfIntroductionController =
+        TextEditingController(text: myAccount.selfIntroduction);
   }
 
   @override
@@ -97,8 +99,28 @@ class _EditAccountPageState extends State<EditAccountPage> {
                 onPressed: () async {
                   if (nameController.text.isNotEmpty &&
                       userIdController.text.isNotEmpty &&
-                      selfIntroductionController.text.isNotEmpty &&
-                      image != null) {}
+                      selfIntroductionController.text.isNotEmpty) {
+                    String imagePath = '';
+                    if (image == null) {
+                      imagePath = myAccount.imagePath;
+                    } else {
+                      var result =
+                          await FunctionUtils.uploadImage(myAccount.id, image!);
+                      imagePath = result;
+                    }
+                    Account updateAccount = Account(
+                      id: myAccount.id,
+                      name: nameController.text,
+                      imagePath: imagePath,
+                      selfIntroduction: selfIntroductionController.text,
+                      userId: userIdController.text,
+                    );
+                    Authentication.myAccount = updateAccount;
+                    var result = await UserFirestore.updateUser(updateAccount);
+                    if (result == true) {
+                      Navigator.pop(context);
+                    }
+                  }
                 },
                 child: const Text('更新'),
               ),
