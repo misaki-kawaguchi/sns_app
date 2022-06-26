@@ -1,6 +1,7 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:sns_app/models/account.dart';
+import 'package:sns_app/utils/authentication.dart';
 import 'package:sns_app/utils/function_utils.dart';
 import 'package:sns_app/utils/widget_utils.dart';
 
@@ -12,11 +13,29 @@ class EditAccountPage extends StatefulWidget {
 }
 
 class _EditAccountPageState extends State<EditAccountPage> {
-  final nameController = TextEditingController();
-  final userIdController = TextEditingController();
-  final selfIntroductionController = TextEditingController();
+  Account myAccount = Authentication.myAccount!;
+  TextEditingController nameController = TextEditingController();
+  TextEditingController userIdController = TextEditingController();
+  TextEditingController selfIntroductionController = TextEditingController();
 
   File? image;
+
+  // ImageProvider：画像の情報を提供する
+  ImageProvider getImage() {
+    if (image == null) {
+      return NetworkImage(myAccount.imagePath);
+    } else {
+      return FileImage(image!);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: myAccount.name);
+    userIdController = TextEditingController(text: myAccount.userId);
+    selfIntroductionController = TextEditingController(text: myAccount.selfIntroduction);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +57,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
                   }
                 },
                 child: CircleAvatar(
-                  foregroundImage: image == null ? null : FileImage(image!),
+                  foregroundImage: getImage(),
                   radius: 40,
                   child: const Icon(Icons.add),
                 ),
