@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sns_app/time_line/time_line_page.dart';
+import 'package:sns_app/ui/time_line/time_line_page.dart';
 
 void main() {
   runApp(const MyApp());
