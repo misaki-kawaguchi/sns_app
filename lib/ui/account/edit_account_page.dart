@@ -1,0 +1,92 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:sns_app/utils/function_utils.dart';
+import 'package:sns_app/utils/widget_utils.dart';
+
+class EditAccountPage extends StatefulWidget {
+  const EditAccountPage({Key? key}) : super(key: key);
+
+  @override
+  State<EditAccountPage> createState() => _EditAccountPageState();
+}
+
+class _EditAccountPageState extends State<EditAccountPage> {
+  final nameController = TextEditingController();
+  final userIdController = TextEditingController();
+  final selfIntroductionController = TextEditingController();
+
+  File? image;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: WidgetUtils.createAppBar('プロフィール編集'),
+      body: SingleChildScrollView(
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            children: [
+              const SizedBox(height: 30),
+              GestureDetector(
+                onTap: () async {
+                  var result = await FunctionUtils.getImageFromGallery();
+                  if (result != null) {
+                    setState(() {
+                      image = File(result.path);
+                    });
+                  }
+                },
+                child: CircleAvatar(
+                  foregroundImage: image == null ? null : FileImage(image!),
+                  radius: 40,
+                  child: const Icon(Icons.add),
+                ),
+              ),
+              SizedBox(
+                width: 300,
+                child: TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    hintText: '名前',
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: SizedBox(
+                  width: 300,
+                  child: TextField(
+                    controller: userIdController,
+                    decoration: const InputDecoration(
+                      hintText: 'ユーザーID',
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 300,
+                child: TextField(
+                  controller: selfIntroductionController,
+                  decoration: const InputDecoration(
+                    hintText: '自己紹介',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 50),
+              ElevatedButton(
+                onPressed: () async {
+                  if (nameController.text.isNotEmpty &&
+                      userIdController.text.isNotEmpty &&
+                      selfIntroductionController.text.isNotEmpty &&
+                      image != null) {}
+                },
+                child: const Text('更新'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
