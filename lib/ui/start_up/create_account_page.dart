@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({Key? key}) : super(key: key);
@@ -14,18 +17,30 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController emailController = TextEditingController();
 
+  File? image;
+  ImagePicker picker = ImagePicker();
+
+  Future<void> getImageFromGallery() async {
+    final pickerFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickerFile != null) {
+      setState(() {
+        image = File(pickerFile.path);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
         title: const Text(
           '新規登録',
           style: TextStyle(color: Colors.black),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: SizedBox(
@@ -33,9 +48,15 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
           child: Column(
             children: [
               const SizedBox(height: 30),
-              const CircleAvatar(
-                radius: 40,
-                child: Icon(Icons.add),
+              GestureDetector(
+                onTap: () {
+                  getImageFromGallery();
+                },
+                child: CircleAvatar(
+                  foregroundImage: image == null ? null : FileImage(image!),
+                  radius: 40,
+                  child: const Icon(Icons.add),
+                ),
               ),
               SizedBox(
                 width: 300,
@@ -95,7 +116,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       userIdController.text.isNotEmpty &&
                       selfIntroductionController.text.isNotEmpty &&
                       emailController.text.isNotEmpty &&
-                      passwordController.text.isNotEmpty) {
+                      passwordController.text.isNotEmpty &&
+                      image != null) {
                     Navigator.pop(context);
                   }
                 },
