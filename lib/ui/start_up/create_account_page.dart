@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sns_app/utils/authentication.dart';
@@ -28,6 +30,18 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         image = File(pickerFile.path);
       });
     }
+  }
+
+  Future<void> uploadImage(String uid) async {
+    // インスタンスを作成
+    final FirebaseStorage storageInstance = FirebaseStorage.instance;
+    // ファイルへの参照を作成
+    final Reference ref = FirebaseStorage.instance.ref();
+    // uidをフォルダ名にしてファイルを作成
+    await ref.child(uid).putFile(image!);
+    // アップロードした画像のURLを取得
+    String downloadUrl = await storageInstance.ref(uid).getDownloadURL();
+    print('image_path:$downloadUrl');
   }
 
   @override
@@ -120,7 +134,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                       passwordController.text.isNotEmpty &&
                       image != null) {
                     var result = await Authentication.signUp(emailController.text, passwordController.text);
-                    if (result == true) {
+                    if (result is UserCredential) {
+                      await uploadImage(result.user!.uid);
                       Navigator.pop(context);
                     }
                   }
