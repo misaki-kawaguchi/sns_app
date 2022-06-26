@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sns_app/models/account.dart';
 import 'package:sns_app/models/post.dart';
+import 'package:sns_app/utils/authentication.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({Key? key}) : super(key: key);
@@ -13,16 +14,7 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
 
-  Account myAccount = Account(
-    id: '1',
-    name: 'Flutterラボ',
-    imagePath:
-        'https://yt3.ggpht.com/ngVd2-zv5o3pGUCfiVdZXCHhnq_g1Lo1Y8DbrmB9O8G7DG0IWUQJgsacqsI_LRvZE8JTsbQIuQ=s900-c-k-c0x00ffffff-no-rj',
-    selfIntroduction: 'こんばんは',
-    userId: 'flutter_labo',
-    createdTime: Timestamp.now(),
-    updatedTime: Timestamp.now(),
-  );
+  Account myAccount = Authentication.myAccount!;
 
   List<Post> postList = [
     Post(

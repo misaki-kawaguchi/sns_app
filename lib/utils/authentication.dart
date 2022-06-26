@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sns_app/models/account.dart';
 
 class Authentication {
   static final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   static User? currentFirebaseUser;
+  static Account? myAccount;
 
   static Future<dynamic> signUp(String email, String pass) async {
     try {
@@ -20,7 +22,7 @@ class Authentication {
       final UserCredential _result = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: pass);
       currentFirebaseUser = _result.user;
       print('authサインイン完了');
-      return true;
+      return _result;
     } on FirebaseAuthException catch (e) {
       print('authサインインエラー: $e');
       return false;
