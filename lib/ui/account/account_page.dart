@@ -5,6 +5,8 @@ import 'package:sns_app/models/account.dart';
 import 'package:sns_app/models/post.dart';
 import 'package:sns_app/ui/account/edit_account_page.dart';
 import 'package:sns_app/utils/authentication.dart';
+import 'package:sns_app/utils/firestore/posts.dart';
+import 'package:sns_app/utils/firestore/users.dart';
 
 class AccountPage extends StatefulWidget {
   const AccountPage({Key? key}) : super(key: key);
@@ -14,23 +16,7 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-
   Account myAccount = Authentication.myAccount!;
-
-  List<Post> postList = [
-    Post(
-      id: '1',
-      content: '初めまして',
-      postAccountId: '1',
-      createdTime: Timestamp.now(),
-    ),
-    Post(
-      id: '2',
-      content: '初めまして2回目',
-      postAccountId: '1',
-      createdTime: Timestamp.now(),
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +70,7 @@ class _AccountPageState extends State<AccountPage> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                      const EditAccountPage()));
+                                          const EditAccountPage()));
                               if (result == true) {
                                 setState(() {
                                   myAccount = Authentication.myAccount!;
@@ -120,71 +106,108 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: postList.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          border: index == 0
-                              ? const Border(
-                                  top: BorderSide(color: Colors.grey, width: 0),
-                                  bottom:
-                                      BorderSide(color: Colors.grey, width: 0),
-                                )
-                              : const Border(
-                                  bottom:
-                                      BorderSide(color: Colors.grey, width: 0),
-                                ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 15),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 22,
-                              foregroundImage:
-                                  NetworkImage(myAccount.imagePath),
-                            ),
-                            const SizedBox(width: 15),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: UserFirestore.users
+                        .doc(myAccount.id)
+                        .collection('my_posts')
+                        .orderBy('created_time', descending: true)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        List<String> myPostIds =
+                            List.generate(snapshot.data!.docs.length, (index) {
+                          return snapshot.data!.docs[index].id;
+                        });
+                        return FutureBuilder<List<Post>?>(
+                            future: PostFireStore.getPostsFromIds(myPostIds),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return ListView.builder(
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: snapshot.data!.length,
+                                  itemBuilder: (context, index) {
+                                    Post post = snapshot.data![index];
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        border: index == 0
+                                            ? const Border(
+                                                top: BorderSide(
+                                                    color: Colors.grey,
+                                                    width: 0),
+                                                bottom: BorderSide(
+                                                    color: Colors.grey,
+                                                    width: 0),
+                                              )
+                                            : const Border(
+                                                bottom: BorderSide(
+                                                    color: Colors.grey,
+                                                    width: 0),
+                                              ),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 15),
+                                      child: Row(
                                         children: [
-                                          Text(
-                                            myAccount.name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                          CircleAvatar(
+                                            radius: 22,
+                                            foregroundImage: NetworkImage(
+                                                myAccount.imagePath),
                                           ),
-                                          Text(
-                                            '@${myAccount.userId}',
-                                            style: const TextStyle(
-                                              color: Colors.grey,
+                                          const SizedBox(width: 15),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          myAccount.name,
+                                                          style:
+                                                              const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          '@${myAccount.userId}',
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.grey,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Text(
+                                                      DateFormat('M/d/yy')
+                                                          .format(post
+                                                              .createdTime!
+                                                              .toDate()),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                Text(post.content),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
-                                      Text(
-                                        DateFormat('M/d/yy').format(
-                                            postList[index].createdTime!.toDate()),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(postList[index].content),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
+                                    );
+                                  },
+                                );
+                              } else {
+                                return Container();
+                              }
+                            });
+                      } else {
+                        return Container();
+                      }
                     },
                   ),
                 ),

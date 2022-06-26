@@ -4,12 +4,16 @@ import 'package:sns_app/models/post.dart';
 class PostFireStore {
   static final _firestoreInstance = FirebaseFirestore.instance;
   // 色々なユーザーの投稿をまとめる全体のコレクション
-  static final CollectionReference posts = _firestoreInstance.collection('posts');
+  static final CollectionReference posts =
+      _firestoreInstance.collection('posts');
 
   static Future<dynamic> addPost(Post newPost) async {
     try {
       // 自分だけの投稿をまとめるコレクション
-      final CollectionReference _userPosts = _firestoreInstance.collection('users').doc(newPost.postAccountId).collection('my_posts');
+      final CollectionReference _userPosts = _firestoreInstance
+          .collection('users')
+          .doc(newPost.postAccountId)
+          .collection('my_posts');
       var result = await posts.add({
         'content': newPost.content,
         'post_account_id': newPost.postAccountId,
@@ -21,9 +25,33 @@ class PostFireStore {
       });
       print('投稿完了');
       return true;
-    } on FirebaseException catch(e) {
+    } on FirebaseException catch (e) {
       print('投稿エラー：$e');
       return false;
+    }
+  }
+
+  // 自分の投稿のidから自分の投稿を取得する
+  static Future<List<Post>?> getPostsFromIds(List<String> ids) async {
+    List<Post> postList = [];
+    try {
+      // 送られたidの数だけ処理を行う
+      await Future.forEach(ids, (String id) async{
+        var doc = await posts.doc(id).get();
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        Post post = Post(
+          id: doc.id,
+          content: data['content'],
+          postAccountId: data['post_account_id'],
+          createdTime: data['created_time'],
+        );
+        postList.add(post);
+      });
+      print('自分の投稿の取得完了');
+      return postList;
+    } on FirebaseException catch(e) {
+      print('自分の投稿の取得エラー：$e');
+      return null;
     }
   }
 }
