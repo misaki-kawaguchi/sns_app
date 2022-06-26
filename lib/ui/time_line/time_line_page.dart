@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sns_app/models/account.dart';
 import 'package:sns_app/models/post.dart';
+import 'package:sns_app/ui/time_line/post_page.dart';
 
 class TimeLinePage extends StatefulWidget {
   const TimeLinePage({Key? key}) : super(key: key);
@@ -50,65 +51,73 @@ class _TimeLinePageState extends State<TimeLinePage> {
         elevation: 1,
       ),
       body: ListView.builder(
-          itemCount: postList.length,
-          itemBuilder: (context, index) {
-            return Container(
-              decoration: BoxDecoration(
-                border: index == 0
-                    ? const Border(
-                        top: BorderSide(color: Colors.grey, width: 0),
-                        bottom: BorderSide(color: Colors.grey, width: 0),
-                      )
-                    : const Border(
-                        bottom: BorderSide(color: Colors.grey, width: 0),
-                      ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 22,
-                    foregroundImage: NetworkImage(myAccount.imagePath),
-                  ),
-                  const SizedBox(width: 15),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  myAccount.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '@${myAccount.userId}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              DateFormat('M/d/yy')
-                                  .format(postList[index].createdTime!),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 5),
-                        Text(postList[index].content),
-                      ],
+        itemCount: postList.length,
+        itemBuilder: (context, index) {
+          return Container(
+            decoration: BoxDecoration(
+              border: index == 0
+                  ? const Border(
+                      top: BorderSide(color: Colors.grey, width: 0),
+                      bottom: BorderSide(color: Colors.grey, width: 0),
+                    )
+                  : const Border(
+                      bottom: BorderSide(color: Colors.grey, width: 0),
                     ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  foregroundImage: NetworkImage(myAccount.imagePath),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                myAccount.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '@${myAccount.userId}',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            DateFormat('M/d/yy')
+                                .format(postList[index].createdTime!),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Text(postList[index].content),
+                    ],
                   ),
-                ],
-              ),
-            );
-          }),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const PostPage()));
+        },
+        child: const Icon(Icons.chat_bubble_outline),
+      ),
     );
   }
 }
