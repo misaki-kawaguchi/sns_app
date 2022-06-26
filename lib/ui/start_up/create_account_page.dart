@@ -1,12 +1,11 @@
 import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:sns_app/models/account.dart';
 import 'package:sns_app/utils/authentication.dart';
 import 'package:sns_app/utils/firestore/users.dart';
+import 'package:sns_app/utils/function_utils.dart';
+import 'package:sns_app/utils/widget_utils.dart';
 
 class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({Key? key}) : super(key: key);
@@ -23,43 +22,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   TextEditingController emailController = TextEditingController();
 
   File? image;
-  ImagePicker picker = ImagePicker();
-
-  Future<void> getImageFromGallery() async {
-    final pickerFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickerFile != null) {
-      setState(() {
-        image = File(pickerFile.path);
-      });
-    }
-  }
-
-  Future<String> uploadImage(String uid) async {
-    // インスタンスを作成
-    final FirebaseStorage storageInstance = FirebaseStorage.instance;
-    // ファイルへの参照を作成
-    final Reference ref = FirebaseStorage.instance.ref();
-    // uidをフォルダ名にしてファイルを作成
-    await ref.child(uid).putFile(image!);
-    // アップロードした画像のURLを取得
-    String downloadUrl = await storageInstance.ref(uid).getDownloadURL();
-    print('image_path:$downloadUrl');
-    return downloadUrl;
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
-          '新規登録',
-          style: TextStyle(color: Colors.black),
-        ),
-        centerTitle: true,
-      ),
+      appBar: WidgetUtils.createAppBar('新規登録'),
       body: SingleChildScrollView(
         child: SizedBox(
           width: double.infinity,
@@ -67,8 +34,13 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
             children: [
               const SizedBox(height: 30),
               GestureDetector(
-                onTap: () {
-                  getImageFromGallery();
+                onTap: () async {
+                  var result = await FunctionUtils.getImageFromGallery();
+                  if (result != null) {
+                    setState(() {
+                      image = File(result.path);
+                    });
+                  }
                 },
                 child: CircleAvatar(
                   foregroundImage: image == null ? null : FileImage(image!),
@@ -139,7 +111,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                     var result = await Authentication.signUp(
                         emailController.text, passwordController.text);
                     if (result is UserCredential) {
-                      String imagePath = await uploadImage(result.user!.uid);
+                      String imagePath = await FunctionUtils.uploadImage(
+                          result.user!.uid, image!);
                       Account newAccount = Account(
                         id: result.user!.uid,
                         name: nameController.text,
