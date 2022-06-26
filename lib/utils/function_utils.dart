@@ -16,7 +16,7 @@ class FunctionUtils {
     // ファイルへの参照を作成
     final Reference ref = FirebaseStorage.instance.ref();
     // uidをフォルダ名にしてファイルを作成
-    await ref.child(uid).putFile(image!);
+    await ref.child(uid).putFile(image);
     // アップロードした画像のURLを取得
     String downloadUrl = await storageInstance.ref(uid).getDownloadURL();
     print('image_path:$downloadUrl');

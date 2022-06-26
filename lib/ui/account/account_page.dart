@@ -22,13 +22,13 @@ class _AccountPageState extends State<AccountPage> {
       id: '1',
       content: '初めまして',
       postAccountId: '1',
-      createdTime: DateTime.now(),
+      createdTime: Timestamp.now(),
     ),
     Post(
       id: '2',
       content: '初めまして2回目',
       postAccountId: '1',
-      createdTime: DateTime.now(),
+      createdTime: Timestamp.now(),
     ),
   ];
 
@@ -173,7 +173,7 @@ class _AccountPageState extends State<AccountPage> {
                                       ),
                                       Text(
                                         DateFormat('M/d/yy').format(
-                                            postList[index].createdTime!),
+                                            postList[index].createdTime!.toDate()),
                                       ),
                                     ],
                                   ),
